@@ -1,4 +1,6 @@
 from tkinter import *
+from tkinter import messagebox
+import subprocess
 from PIL import ImageTk, Image
 
 def show_second_page():
@@ -19,10 +21,12 @@ def get_information():
 
 root = Tk()
 root.title("CarLog - Car Maintenance App")
-root.geometry("400x400")
+root.attributes('-fullscreen', True)
+global e1
+global e2
 root.iconbitmap('carr.ico')
 
-my_img = Image.open("palceholder,carlog.jpg")
+my_img = Image.open("placeholder.carlog.jpg")
 resized = my_img.resize((300, 225), Image.LANCZOS)
 new_pic = ImageTk.PhotoImage(resized)
 
@@ -75,5 +79,8 @@ submit_button.grid(row=6, column=0, columnspan=2, pady=10)
 
 return_button = Button(second_page, text="Return to Main Page", command=show_main_page, font=(12))
 return_button.grid(row=7, column=0, columnspan=2, pady=10)
+
+root.grid_rowconfigure(9, weight=1)
+root.grid_columnconfigure(1, weight=1)
 
 root.mainloop()
