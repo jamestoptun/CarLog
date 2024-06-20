@@ -3,13 +3,13 @@ import sqlite3
 from tkinter import *
 from tkinter import messagebox
 import subprocess
-from PIL import Image, ImageTk
 
 def setup_database():
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
+    cursor.execute('DROP TABLE IF EXISTS users')
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE users (
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
@@ -29,13 +29,10 @@ def open_mainpage():
         messagebox.showerror("Error", "Passwords do not match")
         return
 
-    with open("users.txt", "a") as f:
-        f.write(f"{username}:{password}:{email}\n")
-
     try:
         conn = sqlite3.connect('users.db')
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (name, username, password) VALUES (?, ?, ?)", 
+        cursor.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", 
                        (username, password, email))
         conn.commit()
         conn.close()
@@ -46,14 +43,31 @@ def open_mainpage():
     except Exception as e:
         messagebox.showerror("Database Error", str(e))
 
-def open_login():
-    root.destroy
-    subprocess.run(["python", "login.py"])
+def check_login():
+    username = entry_login_username.get()
+    password = entry_login_password.get()
+
+    try:
+        conn = sqlite3.connect('users.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            messagebox.showinfo("Success", "Login successful")
+            root.destroy()
+            subprocess.run(["python", "mainpage.py"])
+        else:
+            messagebox.showerror("Error", "Invalid username or password")
+    except Exception as e:
+        messagebox.showerror("Database Error", str(e))
 
 setup_database()
 
-
 def main():
+    global root, username_entry, password_entry, confirm_password_entry, email_entry, entry_login_username, entry_login_password
+
     root = tk.Tk()
     root.title("Sign-Up and Log-In Page")
     root.attributes('-fullscreen', True)
@@ -78,11 +92,10 @@ def main():
     confirm_password_entry.pack(fill="x", pady=2)
         
     tk.Label(frame_signup, text="Email:",  font=("Arial", 14),bg="lightblue").pack(anchor="w")
-    email_entry = tk.Entry(frame_signup, width=18, show="*")
+    email_entry = tk.Entry(frame_signup, width=18)
     email_entry.pack(fill="x", pady=2)
 
     tk.Button(frame_signup, font=(12), text="Sign Up", command=open_mainpage).pack(pady=20)
-
 
     tk.Label(frame_login, text="Log In", font=("Arial", 20), bg="lightgreen").pack(pady=10)
     
@@ -94,7 +107,7 @@ def main():
     entry_login_password = tk.Entry(frame_login, width=15, show="*")
     entry_login_password.pack(fill="x", pady=2)
 
-    tk.Button(frame_login, font=(12), text="Log In").pack(pady=20)
+    tk.Button(frame_login, font=(12), text="Log In", command=check_login).pack(pady=20)
 
     exit_button = tk.Button(root, text="Exit", width= 4, height=1, command=root.quit, font=("Arial", 14), bg="white", fg="black")
     exit_button.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-20)
