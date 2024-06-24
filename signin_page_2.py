@@ -7,9 +7,8 @@ import subprocess
 def setup_database():
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
-    cursor.execute('DROP TABLE IF EXISTS users')
     cursor.execute('''
-        CREATE TABLE users (
+        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
@@ -79,37 +78,37 @@ def main():
 
     tk.Label(frame_signup, text="Sign Up", font=("Arial", 20), bg="lightblue").pack(pady=10)
     
-    tk.Label(frame_signup, text="Username:",  font=("Arial", 14),bg="lightblue").pack(anchor="w")
-    username_entry = tk.Entry(frame_signup, width=15)
-    username_entry.pack(fill="x", pady=2)
+    tk.Label(frame_signup, text="Username:", font=("Arial", 14), bg="lightblue").pack(anchor="center")
+    username_entry = tk.Entry(frame_signup, width=25)
+    username_entry.pack(pady=2, padx=20, anchor="center")
     
-    tk.Label(frame_signup, text="Password:",  font=("Arial", 14),bg="lightblue").pack(anchor="w")
-    password_entry = tk.Entry(frame_signup, width=15, show="*")
-    password_entry.pack(fill="x", pady=2)
+    tk.Label(frame_signup, text="Password:", font=("Arial", 14), bg="lightblue").pack(anchor="center")
+    password_entry = tk.Entry(frame_signup, width=25, show="*")
+    password_entry.pack(pady=2, padx=20, anchor="center")
     
-    tk.Label(frame_signup, text="Confirm Password:",  font=("Arial", 14),bg="lightblue").pack(anchor="w")
-    confirm_password_entry = tk.Entry(frame_signup, width=18, show="*")
-    confirm_password_entry.pack(fill="x", pady=2)
+    tk.Label(frame_signup, text="Confirm Password:", font=("Arial", 14), bg="lightblue").pack(anchor="center")
+    confirm_password_entry = tk.Entry(frame_signup, width=25, show="*")
+    confirm_password_entry.pack(pady=2, padx=20, anchor="center")
         
-    tk.Label(frame_signup, text="Email:",  font=("Arial", 14),bg="lightblue").pack(anchor="w")
-    email_entry = tk.Entry(frame_signup, width=18)
-    email_entry.pack(fill="x", pady=2)
+    tk.Label(frame_signup, text="Email:", font=("Arial", 14), bg="lightblue").pack(anchor="center")
+    email_entry = tk.Entry(frame_signup, width=25)
+    email_entry.pack(pady=2, padx=20, anchor="center")
 
-    tk.Button(frame_signup, font=(12), text="Sign Up", command=open_mainpage).pack(pady=20)
+    tk.Button(frame_signup, font=("Arial", 12), text="Sign Up", command=open_mainpage).pack(pady=20)
 
     tk.Label(frame_login, text="Log In", font=("Arial", 20), bg="lightgreen").pack(pady=10)
     
-    tk.Label(frame_login, text="Username:",  font=("Arial", 14),bg="lightgreen").pack(anchor="w")
-    entry_login_username = tk.Entry(frame_login, width=15)
-    entry_login_username.pack(fill="x", pady=2)
+    tk.Label(frame_login, text="Username:", font=("Arial", 14), bg="lightgreen").pack(anchor="center")
+    entry_login_username = tk.Entry(frame_login, width=25)
+    entry_login_username.pack(pady=2, padx=20, anchor="center")
     
-    tk.Label(frame_login, text="Password:",  font=("Arial", 14),bg="lightgreen").pack(anchor="w")
-    entry_login_password = tk.Entry(frame_login, width=15, show="*")
-    entry_login_password.pack(fill="x", pady=2)
+    tk.Label(frame_login, text="Password:", font=("Arial", 14), bg="lightgreen").pack(anchor="center")
+    entry_login_password = tk.Entry(frame_login, width=25, show="*")
+    entry_login_password.pack(pady=2, padx=20, anchor="center")
 
-    tk.Button(frame_login, font=(12), text="Log In", command=check_login).pack(pady=20)
+    tk.Button(frame_login, font=("Arial", 12), text="Log In", command=check_login).pack(pady=20)
 
-    exit_button = tk.Button(root, text="Exit", width= 4, height=1, command=root.quit, font=("Arial", 14), bg="white", fg="black")
+    exit_button = tk.Button(root, text="Exit", width=4, height=1, command=root.quit, font=("Arial", 14), bg="white", fg="black")
     exit_button.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-20)
 
     root.mainloop()
