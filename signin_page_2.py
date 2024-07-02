@@ -28,6 +28,10 @@ def open_mainpage():
         messagebox.showerror("Error", "Passwords do not match")
         return
 
+    if "@" not in email:
+        messagebox.showerror("Error", "Invalid email address, no \"@\"")
+        return
+
     try:
         conn = sqlite3.connect('users.db')
         cursor = conn.cursor()
@@ -75,7 +79,6 @@ def main():
     frame_login = tk.Frame(root, padx=20, pady=20, bg="lightgreen")
     frame_signup.pack(side="left", expand=True, fill="both")
     frame_login.pack(side="right", expand=True, fill="both")
-
     tk.Label(frame_signup, text="Sign Up", font=("Arial", 20), bg="lightblue").pack(pady=10)
     
     tk.Label(frame_signup, text="Username:", font=("Arial", 14), bg="lightblue").pack(anchor="center")
