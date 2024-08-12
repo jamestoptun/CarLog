@@ -7,7 +7,19 @@ def setup_database():
     conn = sqlite3.connect('carlog.db')
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_login (
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            car_make TEXT NOT NULL,
+            car_model TEXT NOT NULL,
+            car_year TEXT NOT NULL,
+            vin TEXT NOT NULL UNIQUE,
+            license_plate TEXT NOT NULL UNIQUE
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_logins (
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
@@ -59,7 +71,7 @@ def check_login():
         if user:
             messagebox.showinfo("Success", "Login successful")
             root.destroy()
-            subprocess.run(["python", "mainpage.py"])
+            subprocess.run(["python", "carlog.py"])
         else:
             messagebox.showerror("Error", "Invalid username or password")
     except Exception as e:
