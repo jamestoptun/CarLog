@@ -49,6 +49,16 @@ def open_mainpage():
         cursor.execute("INSERT INTO user_logins (username, password, email) VALUES (?, ?, ?)", 
                        (username, password, email))
         conn.commit()
+
+        cursor.execute("SELECT id FROM user_logins WHERE username = ?", (username,))
+        user_login_id = cursor.fetchone()[0]
+
+        cursor.execute('''
+            INSERT INTO users (user_login_id)
+            VALUES (?)
+        ''', (user_login_id,))
+        
+        conn.commit()
         conn.close()
 
         messagebox.showinfo("Success", "Account created successfully")
