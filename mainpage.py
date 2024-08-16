@@ -4,6 +4,7 @@ import sqlite3
 from PIL import ImageTk, Image
 import subprocess
 
+#Dictionary to stores makes & models
 car_makes = {
     "Toyota": ["Corolla", "Camry", "RAV4", "Highlander", "Prius", "Tacoma", "Land Cruiser", "4Runner", "Avalon", "Yaris"],
     "BMW": ["3 Series", "5 Series", "7 Series", "X5", "X3", "M3", "M5", "i3", "i8", "Z4"],
@@ -17,8 +18,10 @@ car_makes = {
     "Hyundai": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Palisade", "Accent", "Kona", "Veloster", "Venue", "Ioniq"]
 }
 
+#List of car years 
 car_years = [str(year) for year in range(1980, 2025)]
 
+#Setup database like in signin_page.py
 def setup_database():
     conn = sqlite3.connect('carlog.db')
     cursor = conn.cursor()
@@ -43,24 +46,27 @@ def setup_database():
         )
     ''')
     conn.commit()
-    conn.close()
+    conn.close() #Closes database connection 
 
+#Function to display second page
 def show_second_page():
     main_page.pack_forget()
     second_page.pack(expand=True, fill=tk.BOTH)
-
+#Function to return back to main page if needed
 def show_main_page():
     second_page.pack_forget()
     main_page.pack(expand=True, fill=tk.BOTH)
-
+#Function to update car models based on selection in drop down
 def update_car_models(event):
-    selected_make = car_make_combo.get()
-    models = car_makes.get(selected_make, [])
-    car_model_combo['values'] = models
+    selected_make = car_make_combo.get() #Get the selected car make
+    models = car_makes.get(selected_make, []) #Get the list of models for the make
+    car_model_combo['values'] = models #Update the car model combo box
     if models:
-        car_model_combo.current(0)
+        car_model_combo.current(0) #Set the first model as default selection
 
-def get_information():
+#Function to retrieve and store user information from form
+def get_information(): 
+    #Retrieve user inputs
     first_name = first_name_entry.get()
     last_name = last_name_entry.get()
     car_make = car_make_combo.get()
@@ -69,18 +75,23 @@ def get_information():
     vin = vin_entry.get()
     license_plate = license_plate_entry.get()
 
+    #Check if all fields are filled
     if not (first_name and last_name and car_make and car_model and car_year and vin and license_plate):
         messagebox.showerror("Error", "All fields must be filled")
         return
 
     conn = sqlite3.connect('carlog.db')
     cursor = conn.cursor()
+    
+    #Check if VIN/license plate already exists
     cursor.execute('SELECT COUNT(*) FROM users WHERE vin=? OR license_plate=?', (vin, license_plate))
     result = cursor.fetchone()
     
     if result[0] > 0:
+        #Shows error if VIN/License plate already exists
         messagebox.showerror("Error", "VIN or License Plate already exists")
     else:
+        #Insert the new user information into the "Users" table
         cursor.execute('''
             INSERT INTO users (first_name, last_name, car_make, car_model, car_year, vin, license_plate)
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -91,15 +102,18 @@ def get_information():
         subprocess.run(["python", "carlog.py"])
     conn.close()
 
+#Create main window
 root = tk.Tk()
 root.title("CarLog - Car Maintenance App")
 root.attributes('-fullscreen', True)
 root.iconbitmap('carr.ico')
 
+#Load and resize image
 my_img = Image.open("car1.png")
 resized = my_img.resize((225, 225), Image.LANCZOS)
 new_pic = ImageTk.PhotoImage(resized)
 
+#Create frame for main page
 main_page = tk.Frame(root)
 main_page.pack(expand=True, fill=tk.BOTH)
 
@@ -115,6 +129,7 @@ enter_button.pack(pady=20)
 exit_button_main = tk.Button(main_page, text="Exit", command=root.destroy, font=("Lato", 16), width=5, height=1, bg="#f44336", fg="white")
 exit_button_main.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-20)
 
+#Second page for information entry
 second_page = tk.Frame(root)
 
 first_name_label = tk.Label(second_page, text="First Name:", font=("Lato", 14), padx=10, pady=5)
