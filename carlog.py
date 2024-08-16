@@ -1,4 +1,4 @@
-import tkinter as tk
+import tkinter as tk                                                           #rely/x = changes pistion relative to window
 from tkinter import filedialog, messagebox
 import sqlite3
 from PIL import ImageTk, Image
@@ -43,25 +43,6 @@ def fetch_user_data():
     if user_data:
         date_of_ownership_entry.set_date(datetime.strptime(user_data[0], "%d/%m/%Y"))
         total_money_spent_var.set(f"Total Money Spent: ${user_data[1]:.2f}")
-
-def update_average_monthly_expenses():
-    conn = sqlite3.connect('carlog.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT signup_date, total_money_spent FROM users WHERE id = 1')  #Assuming single user
-    user_data = cursor.fetchone()
-    conn.close()
-
-    if user_data:
-        signup_date = datetime.strptime(user_data[0], "%Y-%m-%d")
-        total_money_spent = user_data[1]
-
-        today = datetime.now()
-        months_difference = (today.year - signup_date.year) * 12 + today.month - signup_date.month
-        months_difference = max(months_difference, 1)  #Ensure at least 1 month to stop division of zero
-
-        average_expenses = total_money_spent / months_difference
-        avg_monthly_expenses_var.set(f"Average Monthly Expenses: ${average_expenses:.2f}")
-
 
 def open_image():
     file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.jpg *.jpeg *.bmp")])
@@ -125,6 +106,16 @@ def update_expense_log():
     for expense in expenses:
         expense_label = tk.Label(history_frame, text=f"{expense[0]}: ${expense[1]:.2f} on {expense[2]}", font=("Lato", 10), anchor="w")
         expense_label.pack(fill=tk.X)
+
+def calculate_average():
+    try:
+        months = int(months_entry.get())
+        if months <= 0:
+            raise ValueError
+        average_spending = total_money_spent / months
+        average_spending_var.set(f"Avg. Spending per Month: ${average_spending:.2f}")
+    except ValueError:
+        messagebox.showerror("Error", "Please enter a valid positive number for months.")
 
 root = tk.Tk()
 root.title("CarLog - Car Maintenance App")
@@ -191,12 +182,23 @@ total_money_spent_var = tk.StringVar(value=f"Total Money Spent: ${total_money_sp
 total_money_spent_label = tk.Label(carlog_page, textvariable=total_money_spent_var, font=("Lato", 12))
 total_money_spent_label.place(relx=0.02, rely=0.7, anchor="nw")
 
+# Number of Months Entry
+months_label = tk.Label(carlog_page, text="Number of Months:", font=("Lato", 12))
+months_label.place(relx=0.02, rely=0.80, anchor="nw")
+months_entry = tk.Entry(carlog_page, font=("Lato", 12))
+months_entry.place(relx=0.13, rely=0.80, anchor="nw", relwidth=0.12)
+
+# Button to calculate the average spending
+calculate_button = tk.Button(carlog_page, text="Calculate Avg.", command=calculate_average, font=("Lato", 12), bg="#4CAF50", fg="white")
+calculate_button.place(relx=0.26, rely=0.80, anchor="nw")
+
+# Label to display the average spending per month
+average_spending_var = tk.StringVar(value="Avg. Spending per Month: $0.00")
+average_spending_label = tk.Label(carlog_page, textvariable=average_spending_var, font=("Lato", 12))
+average_spending_label.place(relx=0.02, rely=0.75, anchor="nw")
+
 update_date_button = tk.Button(carlog_page, text="Update Date", command=update_ownership_date, font=("Lato", 12), bg="#4CAF50", fg="white")
 update_date_button.place(relx=0.16, rely=0.39, anchor="nw")
-
-avg_monthly_expenses_var = tk.StringVar()
-avg_monthly_expenses_label = tk.Label(carlog_page, textvariable=avg_monthly_expenses_var, font=("Lato", 14))
-avg_monthly_expenses_label.place(relx=0.02, rely=0.20, anchor="nw")
 
 exit_button_carlog = tk.Button(carlog_page, text="Exit", command=root.destroy, font=("Lato", 16), width=5, height=1, bg="#f44336", fg="white")
 exit_button_carlog.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-20)
