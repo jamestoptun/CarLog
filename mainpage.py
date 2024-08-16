@@ -1,23 +1,23 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import sqlite3
 from PIL import ImageTk, Image
+import subprocess
 
 car_makes = {
-    "BMW": ["3 Series", "5 Series", "X5", "X3", "1 Series", "X1", "2 Series", "4 Series", "X6", "X7"],
-    "Toyota": ["Corolla", "Camry", "Hilux", "RAV4", "Yaris", "Prius", "Land Cruiser", "Highlander", "Fortuner", "Innova"],
-    "Honda": ["Civic", "Accord", "CR-V", "Jazz", "HR-V", "City", "Fit", "Pilot", "Odyssey", "Brio"],
-    "Ford": ["F-150", "Escape", "Explorer", "Ranger", "Mustang", "Edge", "Fusion", "Focus", "Expedition", "Bronco"],
-    "Chevrolet": ["Silverado", "Equinox", "Traverse", "Tahoe", "Malibu", "Camaro", "Colorado", "Blazer", "Trailblazer", "Impala"],
-    "Nissan": ["Altima", "Sentra", "Rogue", "Pathfinder", "Murano", "Maxima", "Frontier", "Versa", "Armada", "Titan"],
-    "Hyundai": ["Elantra", "Sonata", "Santa Fe", "Tucson", "Palisade", "Accent", "Kona", "Ioniq", "Venue", "Nexo"],
-    "Mercedes-Benz": ["C-Class", "E-Class", "GLC", "GLE", "A-Class", "GLA", "S-Class", "GLS", "G-Class", "CLA"],
-    "Volkswagen": ["Golf", "Polo", "Tiguan", "Passat", "Jetta", "Touareg", "Arteon", "T-Roc", "Atlas", "ID.4"],
-    "Audi": ["A4", "Q5", "A6", "Q7", "A3", "Q3", "A5", "Q8", "A7", "E-Tron"]
+    "Toyota": ["Corolla", "Camry", "RAV4", "Highlander", "Prius", "Tacoma", "Land Cruiser", "4Runner", "Avalon", "Yaris"],
+    "BMW": ["3 Series", "5 Series", "7 Series", "X5", "X3", "M3", "M5", "i3", "i8", "Z4"],
+    "Ford": ["F-150", "Escape", "Explorer", "Mustang", "Fusion", "Edge", "Ranger", "Expedition", "Bronco", "Focus"],
+    "Honda": ["Civic", "Accord", "CR-V", "Pilot", "Fit", "Odyssey", "Ridgeline", "HR-V", "Passport", "Insight"],
+    "Chevrolet": ["Silverado", "Equinox", "Malibu", "Tahoe", "Traverse", "Colorado", "Blazer", "Camaro", "Suburban", "Trax"],
+    "Mercedes-Benz": ["C-Class", "E-Class", "S-Class", "GLC", "GLE", "GLA", "GLS", "A-Class", "CLA", "SL"],
+    "Volkswagen": ["Golf", "Passat", "Tiguan", "Jetta", "Atlas", "Beetle", "Touareg", "Arteon", "ID.4", "Polo"],
+    "Nissan": ["Altima", "Sentra", "Rogue", "Murano", "Pathfinder", "Frontier", "Maxima", "Versa", "GT-R", "Kicks"],
+    "Audi": ["A3", "A4", "A6", "Q5", "Q7", "Q3", "A8", "Q8", "e-tron", "TT"],
+    "Hyundai": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Palisade", "Accent", "Kona", "Veloster", "Venue", "Ioniq"]
 }
 
-car_years = [str(year) for year in range(1980, 2026)]
+car_years = [str(year) for year in range(1980, 2025)]
 
 def setup_database():
     conn = sqlite3.connect('carlog.db')
@@ -34,6 +34,14 @@ def setup_database():
             license_plate TEXT NOT NULL UNIQUE
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_logins (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            email TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -45,12 +53,19 @@ def show_main_page():
     second_page.pack_forget()
     main_page.pack(expand=True, fill=tk.BOTH)
 
+def update_car_models(event):
+    selected_make = car_make_combo.get()
+    models = car_makes.get(selected_make, [])
+    car_model_combo['values'] = models
+    if models:
+        car_model_combo.current(0)
+
 def get_information():
     first_name = first_name_entry.get()
     last_name = last_name_entry.get()
-    car_make = car_make_entry.get()
-    car_model = car_model_entry.get()
-    car_year = car_year_entry.get()
+    car_make = car_make_combo.get()
+    car_model = car_model_combo.get()
+    car_year = car_year_combo.get()
     vin = vin_entry.get()
     license_plate = license_plate_entry.get()
 
@@ -72,15 +87,9 @@ def get_information():
         ''', (first_name, last_name, car_make, car_model, car_year, vin, license_plate))
         conn.commit()
         messagebox.showinfo("Success", "Information stored successfully")
-        show_main_page()
+        root.destroy()
+        subprocess.run(["python", "carlog.py"])
     conn.close()
-
-def update_car_model(event):
-    selected_make = car_make_entry.get()
-    if selected_make in car_makes:
-        car_model_entry['values'] = car_makes[selected_make]
-    else:
-        car_model_entry['values'] = []
 
 root = tk.Tk()
 root.title("CarLog - Car Maintenance App")
@@ -120,19 +129,19 @@ last_name_entry.place(x=550, y=50)
 
 car_make_label = tk.Label(second_page, text="Car Make:", font=("Lato", 14), padx=10, pady=5)
 car_make_label.place(x=430, y=90)
-car_make_entry = ttk.Combobox(second_page, font=("Lato", 14), values=list(car_makes.keys()))
-car_make_entry.place(x=550, y=90)
-car_make_entry.bind("<<ComboboxSelected>>", update_car_model)
+car_make_combo = ttk.Combobox(second_page, font=("Lato", 14), values=list(car_makes.keys()))
+car_make_combo.place(x=550, y=90)
+car_make_combo.bind("<<ComboboxSelected>>", update_car_models)
 
 car_model_label = tk.Label(second_page, text="Car Model:", font=("Lato", 14), padx=10, pady=5)
 car_model_label.place(x=430, y=130)
-car_model_entry = ttk.Combobox(second_page, font=("Lato", 14))
-car_model_entry.place(x=550, y=130)
+car_model_combo = ttk.Combobox(second_page, font=("Lato", 14))
+car_model_combo.place(x=550, y=130)
 
 car_year_label = tk.Label(second_page, text="Car Year:", font=("Lato", 14), padx=10, pady=5)
 car_year_label.place(x=430, y=170)
-car_year_entry = ttk.Combobox(second_page, font=("Lato", 14), values=car_years)
-car_year_entry.place(x=550, y=170)
+car_year_combo = ttk.Combobox(second_page, font=("Lato", 14), values=car_years)
+car_year_combo.place(x=550, y=170)
 
 vin_label = tk.Label(second_page, text="VIN:", font=("Lato", 14), padx=10, pady=5)
 vin_label.place(x=430, y=210)
